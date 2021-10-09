@@ -1,0 +1,33 @@
+{
+  "name": "capitalist",
+  "version": "0.0.1",
+  "description": "Discord Economy Bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SyntaxisCS/Capitalist.git"
+  },
+  "keywords": [
+    "Discord",
+    "Discord.js",
+    "Discord-Bot",
+    "Economy",
+    "Economy-Bot"
+  ],
+  "author": "Charles Stello",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/SyntaxisCS/Capitalist/issues"
+  },
+  "homepage": "https://github.com/SyntaxisCS/Capitalist#readme",
+  "devDependencies": {
+    "better-sqlite3": "^7.4.3",
+    "discord.js": "^13.2.0"
+  },
+  "dependencies": {
+    "node-html-to-image": "^3.2.0"
+  }
+}
