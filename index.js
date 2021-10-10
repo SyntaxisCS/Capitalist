@@ -94,7 +94,48 @@ client.on("messageCreate", (msg) => {
   		}
 
   		// Game
+  		if (cmd === prefix + "start") {
+  			msg.delete();
+  			const filter = m => m.author.id === author.id;
+  			msg.channel.send(`Hello ${author}, thank you for your interest in Capitalist! Before we get started I need you to answer a few questions! What type of business would you like to start? (Retail, Gas Station, Restraurant`);
 
+  			let businessType;
+  			let businessName;
+  
+  			msg.channel.awaitMessages({filter, max: 1, time:10000, errors:["time"]}).then(collected => {
+  				collected = collected.first().content;
+  				if (collected.toLowerCase() === "retail") {
+  					businessType = "retail";
+  				} else if (collected.toLowerCase() === "gas station") {
+  					businessType = "gas station";
+  				} else if (collected.toLowerCase() === "restraurant") {
+  					businessType = "restraurant";
+  				} else {
+  					msg.channel.send("That is not a valid business type right now. Maybe later ;)");
+  				}
+  				if (collected.toLowerCase() === "retail" || collected.toLowerCase() === "gas station" || collected.toLowerCase() === "restraurant") {
+  					msg.channel.send(`Alright what would you like to call your brand new ${collected}?`);
+  					msg.channel.awaitMessages({filter, max: 1, time:10000, errors:["time"]}).then(collected1 => {
+  						collected1 = collected1.first().content;
+						
+  						if (collected1.length < 15) {
+  							msg.channel.send(`You named your ${collected} business ${collected1}`);
+  							businessName = collected1;
+
+							const DB1 = new Database('capitalistDB.sqlite');
+  							let profileCreate = DB1.prepare(`INSERT OR IGNORE INTO Profiles (username, businessType, businessName) VALUES ('${author.username}','${businessType}','${businessName}');`);
+  							profileCreate.run();
+  							DB1.close();
+  						} else {
+  							msg.channel.send(`Please pick a name under 15 characters`);
+  						}
+  					}).catch(collected1 => {console.log(collected1);msg.channel.send(`${author} you didn't select a name! Please use %start to try again`)})
+  				}
+  			}).catch(collected => {
+  				msg.channel.send(`${author} it seems you did not select a business type. Your choices are Retail, Gas Station, Restraurant`);
+  			});
+  		}
+  		DB.close();
 	}
 });
 
