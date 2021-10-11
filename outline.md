@@ -3,9 +3,9 @@
 * GuildConfig
 	* guildId, prefix
 
-* ${GuildId}.${userId}.profile
-	* username, businessType, businessName, money, upgrades
-												   (Number)
+* Profiles
+	* userId, username, businessType, businessName, money, upgrades
+												   		   (Number)
 
 * ${GuildId}.${userId}.upgrades
 	* upgradeId, (unlockDate??)

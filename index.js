@@ -123,8 +123,10 @@ client.on("messageCreate", (msg) => {
   							businessName = collected1;
 
 							const DB1 = new Database('capitalistDB.sqlite');
-  							let profileCreate = DB1.prepare(`INSERT OR IGNORE INTO Profiles (username, businessType, businessName) VALUES ('${author.username}','${businessType}','${businessName}');`);
+  							let profileCreate = DB1.prepare(`INSERT OR IGNORE INTO Profiles (userId, username, businessType, businessName) VALUES ('${author.id}','${author.username}','${businessType}','${businessName}');`);
   							profileCreate.run();
+  							let upgradeCreate = DB1.prepare(`CREATE TABLE '${msg.guild.id}.${author.id}.upgrades' (upgradeId INT PRIMARY KEY UNIQUE NOT NULL);`);
+  							upgradeCreate.run();
   							DB1.close();
   						} else {
   							msg.channel.send(`Please pick a name under 15 characters`);
@@ -135,7 +137,36 @@ client.on("messageCreate", (msg) => {
   				msg.channel.send(`${author} it seems you did not select a business type. Your choices are Retail, Gas Station, Restraurant`);
   			});
   		}
-  		DB.close();
+
+  		if (cmd === prefix + "work") {
+  			const DB = new Database('capitalistDB.sqlite');
+  			let moneyGive = Math.random() * (3.75 - 0.50) + 0.1;
+  			let businessType = DB.prepare(`SELECT businessType from 'Profiles' WHERE userId = '${author.id}'`).get().businessType;
+  			let originalMoney = DB.prepare(`SELECT money from 'Profiles' WHERE userId = '${author.id}'`).get().money;
+  			let unlockedQuery = DB.prepare(`SELECT * FROM '${msg.guild.id}.${author.id}.upgrades'`);
+  			
+  			let upgradeIds = [];
+  			unlockedQuery.all().forEach(id => {
+  				upgradeIds.push(id.upgradeId);
+  			});
+  			// Math.floor(i * 100) / 100)
+  			let effects = [];
+  			upgradeIds.forEach(id => {
+  				let effectQuery =  DB.prepare(`SELECT effect FROM '${businessType}.upgrades' WHERE upgradeId = ${id}`).get().effect;
+  				effects.push(effectQuery);
+  			});
+  			
+  			effects.forEach(effect => {
+  				let effectArray = effect.split(",");
+  				let effectGive = Math.random() * (effectArray[1] - effectArray[0]) + 0.1;
+  				moneyGive += effectGive;
+  			});
+  			let newAmount = Math.floor(moneyGive*100)/100;
+  			moneyGive = Math.floor(moneyGive*100)/100 + originalMoney;
+  			let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  			DB.close();
+  			msg.channel.send(`You worked for 1 hour and earned $${newAmount} bringing your new total to $${Math.floor(moneyGive*100)/100}`);
+  		}
 	}
 });
 
@@ -152,5 +183,47 @@ client.on("guildDelete", guild => {
 		deleteQuery.run();
 	DB.close();
 });
+
+function gasPumpAlg(level) {
+	if (level > 5) {
+		return "Invalid";
+	} else {
+    	let gasPumpAlg = (level) + level*1000*(1.6667**level);
+    	return gasPumpAlg;
+	}
+}
+
+function shelfAlg(level) {
+	if (level > 8) {
+		return "Invalid";
+	} else {
+    	let shelfAlg = (level) + level*1500*(1.347**level);
+    	return shelfAlg;
+	}
+}
+
+function cashierAlg(level) {
+	if (level > 4) {
+		return "Invalid";
+	} else {
+		let cashierAlg = (level) + level*891*(1.347**level);
+    	return cashierAlg;
+	}
+}
+
+function bathroomAlg(level) {
+    let bathroomAlg = (level) + level*5000*(1.25**level);
+    return bathroomAlg;
+}
+
+function amenitiesAlg(level) {
+    let amenitiesAlg = (level) + level*6000*(1.55**level);
+    return amenitiesAlg;
+}
+
+function electricAlg(level) {
+    let electricAlg = (level) + level*10000*(1.8**level);
+    return electricAlg;
+}
 
 client.login(botconfig.token);
