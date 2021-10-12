@@ -122,11 +122,24 @@ client.on("messageCreate", (msg) => {
   							msg.channel.send(`You named your ${collected} business ${collected1}`);
   							businessName = collected1;
 
-							const DB1 = new Database('capitalistDB.sqlite');
+  							const DB1 = new Database('capitalistDB.sqlite');
+  							
   							let profileCreate = DB1.prepare(`INSERT OR IGNORE INTO Profiles (userId, username, businessType, businessName) VALUES ('${author.id}','${author.username}','${businessType}','${businessName}');`);
   							profileCreate.run();
-  							let upgradeCreate = DB1.prepare(`CREATE TABLE '${msg.guild.id}.${author.id}.upgrades' (upgradeId INT PRIMARY KEY UNIQUE NOT NULL);`);
+  							let upgradeCreate = DB1.prepare(`CREATE TABLE '${msg.guild.id}.${author.id}.upgrades' (upgradeId INT PRIMARY KEY UNIQUE NOT NULL, name STRING NOT NULL);`);
   							upgradeCreate.run();
+
+  							switch(collected) {
+  								case "retail":
+  									return DB1.prepare(`CREATE TABLE '${msg.guild.id}.${author.id}.businessProfile' (username STRING PRIMARY KEY NOT NULL, businessType STRING NOT NULL, gasPump INT NOT NULL DEFAULT (0), parkingLot INT NOT NULL DEFAULT (0), shelf INT DEFAULT (0) NOT NULL, cashier INT DEFAULT (0) NOT NULL, slushee INT DEFAULT (0) NOT NULL, bathrooms INT DEFAULT (0) NOT NULL, amenities INT NOT NULL DEFAULT (0), electric INT DEFAULT (0) NOT NULL);`).run();
+  									break;
+  								case "gas station":
+  									// return
+  									break;
+  								case "restraurant":
+  									// return
+  									break;
+  							}
   							DB1.close();
   						} else {
   							msg.channel.send(`Please pick a name under 15 characters`);
@@ -166,6 +179,63 @@ client.on("messageCreate", (msg) => {
   			let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
   			DB.close();
   			msg.channel.send(`You worked for 1 hour and earned $${newAmount} bringing your new total to $${Math.floor(moneyGive*100)/100}`);
+  		}
+
+  		if (cmd === prefix + "shop") {
+  			const DB = new Database('capitalistDB.sqlite');
+  			let userProfile;
+  			let userUpgrades = [];
+  			
+  			try {
+  				const userProfileQuery = DB.prepare(`SELECT * FROM 'Profiles' WHERE userId = ${author.id}`).get();
+  				let userUpgradesQuery = DB.prepare(`SELECT * FROM '${msg.guild.id}.${author.id}.upgrades'`).all();
+  				userProfile = userProfileQuery;
+  				userUpgrades = userUpgradesQuery;
+  			} catch(err) {
+  				if (err) {
+  					msg.channel.send(`There was a database error. If you haven't made a profile you can make one by typing ${prefix}start!`);
+  				}
+  			}
+
+  			if (userUpgrades.length >= 1) {
+  				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${'Gas Pump'}%'`).all();
+  				console.log(unlockableUpgrades);
+  			} else {
+  				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%1%'`).all();
+  				console.log(unlockableUpgrades);
+  				const shopEmbed = new Discord.MessageEmbed()
+    			.setTitle(`${userProfile.username}'s Shop`)
+   		 		.setColor("#47e59c");
+  				unlockableUpgrades.forEach(async array => {
+   					shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+  				});
+  				setTimeout(function() {
+  					return msg.channel.send({embeds:[shopEmbed]});
+				}, 3000);
+  			}
+  			/*
+  			switch(userProfile.get().businessType) {
+  				case "retail":
+  					let embed0 = new MessageEmbed()
+  					.setColor("#605cfc")
+  					.setTitle(`${userProfile.username}'s Shop`)
+
+  				return "not";
+  				break;
+  			}
+
+  			const shopEmbed = new Discord.MessageEmbed()
+    		.setTitle(`${msg.guild.name} XP Leaderboard!`)
+   		 	.setColor("#47e59c");
+  			sql.forEach(async user => {
+   				embed.addFields({ name: `${number}) ${user.username}`, value: `${user.xp} xp (level ${user.level})` });
+   				number++;
+  			});
+  			setTimeout(function() {
+  				return msg.channel.send({embeds:[shopEmbed]});
+			}, 5000);
+			*/
+			DB.close();
   		}
 	}
 });
