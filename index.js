@@ -131,7 +131,7 @@ client.on("messageCreate", (msg) => {
 
   							switch(collected) {
   								case "retail":
-  									return DB1.prepare(`CREATE TABLE '${msg.guild.id}.${author.id}.businessProfile' (username STRING PRIMARY KEY NOT NULL, businessType STRING NOT NULL, gasPump INT NOT NULL DEFAULT (0), parkingLot INT NOT NULL DEFAULT (0), shelf INT DEFAULT (0) NOT NULL, cashier INT DEFAULT (0) NOT NULL, slushee INT DEFAULT (0) NOT NULL, bathrooms INT DEFAULT (0) NOT NULL, amenities INT NOT NULL DEFAULT (0), electric INT DEFAULT (0) NOT NULL);`).run();
+  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   								case "gas station":
   									// return
@@ -162,7 +162,7 @@ client.on("messageCreate", (msg) => {
   			unlockedQuery.all().forEach(id => {
   				upgradeIds.push(id.upgradeId);
   			});
-  			// Math.floor(i * 100) / 100)
+
   			let effects = [];
   			upgradeIds.forEach(id => {
   				let effectQuery =  DB.prepare(`SELECT effect FROM '${businessType}.upgrades' WHERE upgradeId = ${id}`).get().effect;
@@ -198,11 +198,31 @@ client.on("messageCreate", (msg) => {
   			}
 
   			if (userUpgrades.length >= 1) {
-  				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${'Gas Pump'}%'`).all();
+  				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.businessProfile' WHERE userId = '${userProfile.userId}'`).all();
+  				
+  				switch(userProfile.businessType) {
+  					case "retail":
+  						// New Levels
+  						let gasPump = unlockableUpgrades.gasPump + 1;
+  						let parkingLot = unlockableUpgrades.parkingLot + 1;
+  						let shelf = unlockableUpgrades.shelf + 1;
+  						let cashier = unlockableUpgrades.cashier + 1;
+  						let slushee = 1;
+  						let bathrooms = unlockableUpgrades.bathrooms + 1;
+  						let amenities = unlockableUpgrades.amenities + 1;
+  						let electric = unlockableUpgrades.electric + 1;
+
+  						
+  						break;
+  					case "gas station":
+  						break;
+  					case "restraurant":
+  						break;
+  				}
+
   				console.log(unlockableUpgrades);
   			} else {
   				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%1%'`).all();
-  				console.log(unlockableUpgrades);
   				const shopEmbed = new Discord.MessageEmbed()
     			.setTitle(`${userProfile.username}'s Shop`)
    		 		.setColor("#47e59c");
@@ -213,28 +233,6 @@ client.on("messageCreate", (msg) => {
   					return msg.channel.send({embeds:[shopEmbed]});
 				}, 3000);
   			}
-  			/*
-  			switch(userProfile.get().businessType) {
-  				case "retail":
-  					let embed0 = new MessageEmbed()
-  					.setColor("#605cfc")
-  					.setTitle(`${userProfile.username}'s Shop`)
-
-  				return "not";
-  				break;
-  			}
-
-  			const shopEmbed = new Discord.MessageEmbed()
-    		.setTitle(`${msg.guild.name} XP Leaderboard!`)
-   		 	.setColor("#47e59c");
-  			sql.forEach(async user => {
-   				embed.addFields({ name: `${number}) ${user.username}`, value: `${user.xp} xp (level ${user.level})` });
-   				number++;
-  			});
-  			setTimeout(function() {
-  				return msg.channel.send({embeds:[shopEmbed]});
-			}, 5000);
-			*/
 			DB.close();
   		}
 	}
