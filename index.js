@@ -152,33 +152,39 @@ client.on("messageCreate", (msg) => {
   		}
 
   		if (cmd === prefix + "work") {
-  			const DB = new Database('capitalistDB.sqlite');
-  			let moneyGive = Math.random() * (3.75 - 0.50) + 0.1;
-  			let businessType = DB.prepare(`SELECT businessType from 'Profiles' WHERE userId = '${author.id}'`).get().businessType;
-  			let originalMoney = DB.prepare(`SELECT money from 'Profiles' WHERE userId = '${author.id}'`).get().money;
-  			let unlockedQuery = DB.prepare(`SELECT * FROM '${msg.guild.id}.${author.id}.upgrades'`);
-  			
-  			let upgradeIds = [];
-  			unlockedQuery.all().forEach(id => {
-  				upgradeIds.push(id.upgradeId);
-  			});
+  			try {
+  				const DB = new Database('capitalistDB.sqlite');
+  				let moneyGive = Math.random() * (3.75 - 0.50) + 0.1;
 
-  			let effects = [];
-  			upgradeIds.forEach(id => {
-  				let effectQuery =  DB.prepare(`SELECT effect FROM '${businessType}.upgrades' WHERE upgradeId = ${id}`).get().effect;
-  				effects.push(effectQuery);
-  			});
+  				let businessType = DB.prepare(`SELECT businessType from 'Profiles' WHERE userId = '${author.id}'`).get().businessType;
+  				let originalMoney = DB.prepare(`SELECT money from 'Profiles' WHERE userId = '${author.id}'`).get().money;
+  				let unlockedQuery = DB.prepare(`SELECT * FROM '${msg.guild.id}.${author.id}.upgrades'`);
   			
-  			effects.forEach(effect => {
-  				let effectArray = effect.split(",");
-  				let effectGive = Math.random() * (effectArray[1] - effectArray[0]) + 0.1;
-  				moneyGive += effectGive;
-  			});
-  			let newAmount = Math.floor(moneyGive*100)/100;
-  			moneyGive = Math.floor(moneyGive*100)/100 + originalMoney;
-  			let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
-  			DB.close();
-  			msg.channel.send(`You worked for 1 hour and earned $${newAmount} bringing your new total to $${Math.floor(moneyGive*100)/100}`);
+  				let upgradeIds = [];
+  				unlockedQuery.all().forEach(id => {
+  					upgradeIds.push(id.upgradeId);
+  				});
+
+  				let effects = [];
+  				upgradeIds.forEach(id => {
+  					let effectQuery =  DB.prepare(`SELECT effect FROM '${businessType}.upgrades' WHERE upgradeId = ${id}`).get().effect;
+  					effects.push(effectQuery);
+  				});
+  			
+  				effects.forEach(effect => {
+  					let effectArray = effect.split(",");
+  					let effectGive = Math.random() * (effectArray[1] - effectArray[0]) + 0.1;
+  					moneyGive += effectGive;
+  				});
+  				
+  				let newAmount = Math.floor(moneyGive*100)/100;
+  				moneyGive = Math.floor(moneyGive*100)/100 + originalMoney;
+  				let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  				DB.close();
+  				msg.channel.send(`You worked for 1 hour and earned $${newAmount} bringing your new total to $${Math.floor(moneyGive*100)/100}`);
+  			} catch(err) {
+  				msg.channel.send(`There was a database error. If you haven't made a profile you can make one by typing ${prefix}start!`);
+  			}
   		}
 
   		if (cmd === prefix + "shop") {
@@ -198,8 +204,15 @@ client.on("messageCreate", (msg) => {
   			}
 
   			if (userUpgrades.length >= 1) {
-  				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.businessProfile' WHERE userId = '${userProfile.userId}'`).all();
-  				
+  				let unlockableUpgrades;
+  				try {
+  					let unlockableUpgradesQuery = DB.prepare(`SELECT * FROM '${userProfile.businessType}.businessProfile' WHERE userId = '${userProfile.userId}'`).get();
+  					unlockableUpgrades = unlockableUpgradesQuery
+  				} catch(err) {
+  					msg.channels.send("There was a database error.");
+  					console.log(`Error: ${err}`);
+  				}
+
   				switch(userProfile.businessType) {
   					case "retail":
   						// New Levels
@@ -207,31 +220,81 @@ client.on("messageCreate", (msg) => {
   						let parkingLot = unlockableUpgrades.parkingLot + 1;
   						let shelf = unlockableUpgrades.shelf + 1;
   						let cashier = unlockableUpgrades.cashier + 1;
-  						let slushee = 1;
+  						let slushee = unlockableUpgrades.slushee + 1;
   						let bathrooms = unlockableUpgrades.bathrooms + 1;
   						let amenities = unlockableUpgrades.amenities + 1;
   						let electric = unlockableUpgrades.electric + 1;
 
-  						
+  						let upgrades = [];
+  						if (gasPump <= 8) {
+  							upgrades.push(`${gasPump}:Gas Pump`);
+  						}
+  						if (parkingLot <= 4) {
+  							upgrades.push(`${parkingLot}:Parking Lot`);
+  						}
+  						if (shelf <= 5) {
+  							upgrades.push(`${shelf}:Shelf`);
+  						}
+  						if (cashier <= 5) {
+  							upgrades.push(`${cashier}:Cashier`);
+  						}
+  						if (slushee <= 1) {
+  							upgrades.push(`${slushee}:Slushee`);
+  						}
+  						if (bathrooms <= 5) {
+  							upgrades.push(`${bathrooms}:Bathrooms`);
+  						}
+  						if (amenities <= 5) {
+  							upgrades.push(`${amenities}:Amenities`);
+  						}
+  						if (electric <= 4) {
+  							upgrades.push(`${electric}:Electric`);
+  						}
+
+  						let newUpgrades = [];
+  						if (upgrades.length >= 1) {
+  							upgrades.forEach(upgrade => {
+  								if (upgrade === "Invalid") {return} else {
+  									let newUpgrade = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${upgrade}%'`).get();
+  									newUpgrades.push(newUpgrade);
+  								}
+  							});
+  						}
+  						if (newUpgrades.length >= 1) {
+  							const shopEmbed = new Discord.MessageEmbed()
+    						.setTitle(`${userProfile.username}'s Shop`)
+   		 					.setColor("#47e59c");
+  							newUpgrades.forEach(async array => {
+   								shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+  							});
+  							setTimeout(function() {
+  								return msg.channel.send({embeds:[shopEmbed]});
+							}, 3000);
+  						} else {
+  							return msg.channel.send(`You have unlocked everything!`);
+  						}
   						break;
   					case "gas station":
   						break;
   					case "restraurant":
   						break;
   				}
-
-  				console.log(unlockableUpgrades);
   			} else {
-  				let unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%1%'`).all();
-  				const shopEmbed = new Discord.MessageEmbed()
-    			.setTitle(`${userProfile.username}'s Shop`)
-   		 		.setColor("#47e59c");
-  				unlockableUpgrades.forEach(async array => {
-   					shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
-  				});
-  				setTimeout(function() {
-  					return msg.channel.send({embeds:[shopEmbed]});
-				}, 3000);
+  				let unlockableUpgrades;
+  				try {
+  					unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%1%'`).all();
+  				} catch(err) {}
+  				if (unlockableUpgrades) {
+  					const shopEmbed = new Discord.MessageEmbed()
+    				.setTitle(`${userProfile.username}'s Shop`)
+   		 			.setColor("#47e59c");
+  					unlockableUpgrades.forEach(async array => {
+   						shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+  					});
+  					setTimeout(function() {
+  						return msg.channel.send({embeds:[shopEmbed]});
+					}, 3000);
+  				}
   			}
 			DB.close();
   		}
