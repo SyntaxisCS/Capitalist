@@ -203,7 +203,6 @@ client.on("messageCreate", (msg) => {
   				}
   			}
 
-  			if (userUpgrades.length >= 1) {
   				let unlockableUpgrades;
   				try {
   					let unlockableUpgradesQuery = DB.prepare(`SELECT * FROM '${userProfile.businessType}.businessProfile' WHERE userId = '${userProfile.userId}'`).get();
@@ -279,23 +278,6 @@ client.on("messageCreate", (msg) => {
   					case "restraurant":
   						break;
   				}
-  			} else {
-  				let unlockableUpgrades;
-  				try {
-  					unlockableUpgrades = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%1%'`).all();
-  				} catch(err) {}
-  				if (unlockableUpgrades) {
-  					const shopEmbed = new Discord.MessageEmbed()
-    				.setTitle(`${userProfile.username}'s Shop`)
-   		 			.setColor("#47e59c");
-  					unlockableUpgrades.forEach(async array => {
-   						shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
-  					});
-  					setTimeout(function() {
-  						return msg.channel.send({embeds:[shopEmbed]});
-					}, 3000);
-  				}
-  			}
 			DB.close();
   		}
 	}
