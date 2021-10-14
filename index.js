@@ -59,7 +59,9 @@ client.on("messageCreate", (msg) => {
 			} else {
 				switch(args.toLowerCase()) {
 					case "info":
-
+						break;
+					case "game":
+						break;
 				}
 			}
 		}
@@ -134,10 +136,10 @@ client.on("messageCreate", (msg) => {
   									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   								case "gas station":
-  									// return
+  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   								case "restraurant":
-  									// return
+  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   							}
   							DB1.close();
@@ -214,6 +216,8 @@ client.on("messageCreate", (msg) => {
 
   				switch(userProfile.businessType) {
   					case "retail":
+  						break;
+  					case "gas station":
   						// New Levels
   						let gasPump = unlockableUpgrades.gasPump + 1;
   						let parkingLot = unlockableUpgrades.parkingLot + 1;
@@ -273,13 +277,78 @@ client.on("messageCreate", (msg) => {
   							return msg.channel.send(`You have unlocked everything!`);
   						}
   						break;
-  					case "gas station":
-  						break;
   					case "restraurant":
   						break;
   				}
 			DB.close();
   		}
+
+  		if (cmd === prefix + "buy") {
+  			const DB = new Database('capitalistDB.sqlite');
+  			if(!args) {
+  				msg.channel.send("You didn't select anything to buy!");
+  			} else {
+  				let userProfile;
+  				let businessProfile;
+  				try {
+  					 let userProfileQuery = DB.prepare(`SELECT * FROM 'Profiles' WHERE userId = ${author.id}`).get();
+  					 let businessProfileQuery = DB.prepare(`SELECT * FROM '${userProfileQuery.businessType}.businessProfile' WHERE userId = '${userProfileQuery.userId}'`).get();
+
+  					 userProfile = userProfileQuery;
+  					 businessProfile = businessProfileQuery;
+  				} catch(err) {
+  					console.log(err);
+  					msg.channel.send("There was a database error.");
+  				}
+  				if (isNaN(args)) {
+  					if (args.includes(":")) {
+  						// Max level checker
+  						let split = args.split(":");
+  						if (split[1].toLowerCase() === "gas") {
+  							if (split[0] > 8) {
+  								msg.channel.send("The max level for the Gas Pump upgrade tree is **8**");
+  							} else {
+  								if (!userProfile || !businessProfile) {
+  									msg.channel.send("You do not have a profile!");
+  								} else {
+  									if (split[0] <= businessProfile.gasPump) {
+  										msg.channel.send(`You have unlocked this upgrade already! You are Gas Pump level **${businessProfile.gasPump}**`);
+  									} else {
+  										try {
+  											let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET gasPump = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+  										} catch(err) {
+  											console.log(err);
+  											msg.channel.send("There was a database error.");
+  										}
+  									}
+  								}
+  							}
+  						}
+  					} else {
+  						msg.channel.send("That is not a valid search!");
+  					}
+  				} else {
+  					if (args <= 37) {
+  						// Search by id
+  					} else {
+  						msg.channel.send(`Upgrade ids for ${businessType} do not go that high`);
+  					}
+  				}
+  			}
+  			DB.close();
+  		}
+
 	}
 });
 

@@ -1,3 +1,11 @@
+## 0.0.5
+
+* Buy Command
+
+## 0.0.4
+
+* Shop Command
+
 ## 0.0.3
 
 * Added the work command
