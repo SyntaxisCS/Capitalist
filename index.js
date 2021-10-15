@@ -156,7 +156,9 @@ client.on("messageCreate", (msg) => {
   		if (cmd === prefix + "work") {
   			try {
   				const DB = new Database('capitalistDB.sqlite');
-  				let moneyGive = Math.random() * (3.75 - 0.50) + 0.1;
+  				// let moneyGive = Math.random() * (3.75 - 0.50) + 0.1;
+  				let moneyGive = Math.random() * (10.75 - 2.50) + 0.1;
+  				console.log(`Original work: ${moneyGive}`);
 
   				let businessType = DB.prepare(`SELECT businessType from 'Profiles' WHERE userId = '${author.id}'`).get().businessType;
   				let originalMoney = DB.prepare(`SELECT money from 'Profiles' WHERE userId = '${author.id}'`).get().money;
@@ -171,6 +173,7 @@ client.on("messageCreate", (msg) => {
   				upgradeIds.forEach(id => {
   					let effectQuery =  DB.prepare(`SELECT effect FROM '${businessType}.upgrades' WHERE upgradeId = ${id}`).get().effect;
   					effects.push(effectQuery);
+  					console.log(`Effect: ${effectQuery}`);
   				});
   			
   				effects.forEach(effect => {
@@ -180,6 +183,7 @@ client.on("messageCreate", (msg) => {
   				});
   				
   				let newAmount = Math.floor(moneyGive*100)/100;
+  				console.log(`Final Total: ${newAmount}`);
   				moneyGive = Math.floor(moneyGive*100)/100 + originalMoney;
   				let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
   				DB.close();
@@ -268,7 +272,8 @@ client.on("messageCreate", (msg) => {
     						.setTitle(`${userProfile.username}'s Shop`)
    		 					.setColor("#47e59c");
   							newUpgrades.forEach(async array => {
-   								shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+   								shopEmbed.addFields({ name: `${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+   								// shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
   							});
   							setTimeout(function() {
   								return msg.channel.send({embeds:[shopEmbed]});
@@ -304,28 +309,34 @@ client.on("messageCreate", (msg) => {
   					if (args.includes(":")) {
   						// Max level checker
   						let split = args.split(":");
-  						if (split[1].toLowerCase() === "gas") {
-  							if (split[0] > 8) {
-  								msg.channel.send("The max level for the Gas Pump upgrade tree is **8**");
-  							} else {
-  								if (!userProfile || !businessProfile) {
-  									msg.channel.send("You do not have a profile!");
+  						if (!userProfile || !businessProfile) {
+  							msg.channel.send("You do not have a profile!");
+  						} else {
+  							if (userProfile.businessType === "gas station") {
+  							if (split[1].toLowerCase() === "gas") {
+  								if (split[0] > 8 || split[0] < 0) {
+  									msg.channel.send("The max level for the Gas Pump upgrade tree is **8**");
   								} else {
   									if (split[0] <= businessProfile.gasPump) {
   										msg.channel.send(`You have unlocked this upgrade already! You are Gas Pump level **${businessProfile.gasPump}**`);
   									} else {
   										try {
   											let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+  											if (split[0] === `${businessProfile.gasPump+1}`) {
+  												
+  												if (userProfile.money >= upgradeFind.cost) {
+  													let moneyGive = userProfile.money - upgradeFind.cost;
+  													let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET gasPump = '${split[0]}'`).run();
 
-  											if (userProfile.money >= upgradeFind.cost) {
-  												let moneyGive = userProfile.money - upgradeFind.cost;
-  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET gasPump = '${split[0]}'`).run();
+  													let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  													let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  													msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  												} else {
+  													msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  												}
 
-  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
-  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
-  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
   											} else {
-  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  												msg.channel.send("You have not unlocked the previous upgrades yet!");
   											}
   										} catch(err) {
   											console.log(err);
@@ -334,21 +345,280 @@ client.on("messageCreate", (msg) => {
   									}
   								}
   							}
+  							if (split[1].toLowerCase() === "parking") {
+  								if (split[0] > 4 || split[0] < 0) {
+  									msg.channel.send("The max level for the Parking Lot upgrade tree is **4**");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.parkingLot+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET parkingLot = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+  										
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							if (split[1].toLowerCase() === "shelf") {
+  								if (split[0] > 5 || split[0] < 0) {
+  									msg.channel.send("The max level for the shelves upgrade tree is **5***");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.shelf+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET shelf = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							if (split[1].toLowerCase() === "cashier") {
+  								if (split[0] > 5 || split[0] < 0) {
+  									msg.channel.send("The max level for the cashier upgrade tree is **5**");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.cashier+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET cashier = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							if (split[1].toLowerCase() === "slushee") {
+  								if (split[0] > 1 || split[0] < 0) {
+  									msg.channel.send("The max level for the Slushee upgrade tree is **1**");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.slushee+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET slushee = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							if (split[1].toLowerCase() === "bathrooms") {
+  								if (split[0] > 5 || split[0] < 0) {
+  									msg.channel.send("The max level for the Bathroom upgrade tree is **5**");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.bathrooms+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET bathrooms = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							if (split[1].toLowerCase() === "amenities") {
+  								if (split[0] > 5 || split[0] < 0) {
+  									msg.channel.send("The max level for the Amenities upgrade tree is **5**");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.amenities+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET amenities = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							if (split[1].toLowerCase() === "electric") {
+  								if (split[0] > 4 || split[0] < 0) {
+  									msg.channel.send("The max level for the Electric Vehicle upgrade tree is **4**");
+  								} else {
+  									try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.electric+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET electric = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  								}
+  							}
+  							} else {
+  								msg.channel.send(`That upgrade is associated with gas stations! You own a ${userProfile.businessType} business!`);
+  							}
+  							/*
+  							if (userProfile.businessType === "retail") {
+  								if (split[1].toLowerCase() === "###") {
+  									if (split[0] > # || split[0] < 0) {
+  										msg.channel.send("The max level for the [Blank] upgrade tree is ##");
+  									} else {
+  										try {
+  										
+  										let upgradeFind = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${args}%'`).get();
+
+  										if (split[0] === `${businessProfile.[REPLACE]+1}`) {
+
+  											if (userProfile.money >= upgradeFind.cost) {
+  												let moneyGive = userProfile.money - upgradeFind.cost;
+  												let businessUpdate = DB.prepare(`UPDATE '${userProfile.businessType}.businessProfile' SET [REPLACE] = '${split[0]}'`).run();
+
+  												let userUpgrades = DB.prepare(`INSERT OR IGNORE INTO '${msg.guild.id}.${author.id}.upgrades' (upgradeId, name) VALUES ('${upgradeFind.upgradeId}','${upgradeFind.name}');`).run();
+  												let moneyUpdate = DB.prepare(`UPDATE 'Profiles' SET money = ${moneyGive} WHERE userId = ${author.id};`).run();
+  												msg.channel.send(`You have succesfully bought the upgrade **${upgradeFind.name}** for $${upgradeFind.cost}. Your new bank account balance is $${moneyGive}.`);
+  											} else {
+  												msg.channel.send(`You do not have enough money to buy **${upgradeFind.name}**!`);
+  											}
+
+  										} else {
+  											msg.channel.send("You have not unlocked the previous upgrades yet!");
+  										}
+  									
+  									} catch(err) {
+  										console.log(err);
+  										msg.channel.send("There was a database error.");
+  									}
+  									}
+  								}
+  							} else {
+  								msg.channel.send(`That upgrade is associated with retail stores! You own a ${userProfile.businessType} business!`);
+  							}
+  							*/
   						}
   					} else {
   						msg.channel.send("That is not a valid search!");
   					}
   				} else {
+  					msg.channel.send("Buying upgrades by their ids has not been implented yet! I'm sorry for the inconvience");
+
+  					/*
   					if (args <= 37) {
   						// Search by id
   					} else {
   						msg.channel.send(`Upgrade ids for ${businessType} do not go that high`);
   					}
+  					*/
   				}
   			}
   			DB.close();
   		}
-
 	}
 });
 
@@ -366,6 +636,7 @@ client.on("guildDelete", guild => {
 	DB.close();
 });
 
+/*
 function gasPumpAlg(level) {
 	if (level > 5) {
 		return "Invalid";
@@ -407,5 +678,6 @@ function electricAlg(level) {
     let electricAlg = (level) + level*10000*(1.8**level);
     return electricAlg;
 }
+*/
 
 client.login(botconfig.token);

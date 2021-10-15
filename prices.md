@@ -1,7 +1,40 @@
 # Upgrade Prices
 
+* Average Daily Profit (Without upgrades) - Min 0.50, Max 3.75 (Changed to )
 ## Retail
-* Average Daily Profit (Without upgrades) - Min 0.50, Max 3.75
+### Parking Lots
+* Medium - $15000
+* Large - $45500
+* Huge - $187000
+* MEGA MALL - $245000*
+
+### Check-out Lanes
+* Level 1: $1201 - +1 Check-out Lane
+* Level 2: $3235 - +1 Check-out Lane
+* Level 3: $6535 - +1 Check-out Lane
+* Level 4: $11736 - +1 Check-out Lane
+* Level 5: $19760 - Express Lane
+* Level 6: $31938 - +1 Express Lane
+* Level 7: $50189 - Self-Checkout Stations
+* Level 8: $77259 - +1 Self-Checkout Station
+
+### Shelves
+* Level 1: $2022 - +1 Shelf
+* Level 2: $5445 - +1 Shelf
+* Level 3: $11001 - +1 Shelf
+* Level 4: $19756 - +1 Shelf
+* Level 5: $33263 - Stronger shelves
+
+### Departments
+* Level 1: $17537 - Bakery
+* Level 2: $61566 - Deli
+* Level 3: $181458 - Butchery
+* Level 4: $378252 - Pharmacy
+
+## Pharmacy
+
+
+## Gas Station
 ### Gas Pumps
 * Level 1: $1668 - +1 Pump
 * Level 2: $5558 - +1 Pump
@@ -50,7 +83,7 @@
 * Level 5: $268403 - High-Tech Car Wash
 
 ### Electric Vehicle Handling
-* Level 1: $18001
-* Level 2: $64802
-* Level 3: $174963
-* Level 4: $419908
+* Level 1: $18001 - Basic Electric Vehicle Charger
+* Level 2: $64802 - Tesla Super Charger
+* Level 3: $174963 - Multi-Vehicle Charger
+* Level 4: $419908 - Mega Tesla Supercharger station

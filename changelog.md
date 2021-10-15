@@ -1,6 +1,10 @@
+## 0.0.6
+
+* Changed base income from $0.50 - $3.75 to $2.50 - $10.75
+
 ## 0.0.5
 
-* Buy Command
+* Started buy command framework
 
 ## 0.0.4
 
