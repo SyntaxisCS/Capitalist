@@ -1,10 +1,10 @@
 # Capitalist
 
-Capitalist (0.0.6) Open Source
+Capitalist | Open Source Economy Game
 
 ## Description
 
-A free to use Economy game based around owning and managing a business build directly into Discord
+A free to use economy game based around owning and managing a business build directly into Discord
 
 ## Getting Started
 
