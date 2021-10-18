@@ -6,7 +6,7 @@
 * Medium - $15000
 * Large - $45500
 * Huge - $187000
-* MEGA MALL - $245000*
+* MEGA MALL - $245000
 
 ### Check-out Lanes
 * Level 1: $1201 - +1 Check-out Lane
@@ -18,21 +18,39 @@
 * Level 7: $50189 - Self-Checkout Stations
 * Level 8: $77259 - +1 Self-Checkout Station
 
-### Shelves
-* Level 1: $2022 - +1 Shelf
-* Level 2: $5445 - +1 Shelf
-* Level 3: $11001 - +1 Shelf
-* Level 4: $19756 - +1 Shelf
+### Aisle
+* Level 1: $2022 - +1 Aisle
+* Level 2: $5445 - +1 Aisle
+* Level 3: $11001 - +1 Aisle
+* Level 4: $19756 - +1 Aisle
 * Level 5: $33263 - Stronger shelves
 
 ### Departments
 * Level 1: $17537 - Bakery
 * Level 2: $61566 - Deli
 * Level 3: $181458 - Butchery
-* Level 4: $378252 - Pharmacy
 
 ## Pharmacy
+* Level 1: $21043 - Basic Medical Section
+* Level 2: $36901 - Basic Pharmacy
+* Level 3: $64710 - Vaccine Administration
+* Level 4: $113475 - Advanced Pharmacy
 
+### Shopping Carts
+* Level 1: $3600 - Repair Shopping Carts
+* Level 2: $8640 - +25 Carts
+* Level 3: $15551 - Shopping Baskets
+* Level 4: $24883 - +25 Carts & 5 Baskets
+* Level 5: $37324 - +25 Carts & 5 Baskets
+* Level 6: $53747 - High-Capacity Carts
+* Level 7: $75246 - Powered Shopping Carts
+
+### Logistical
+* Level 1: $7452 - Better Warehouse Organization
+* Level 2: $24681 - Business Relationships Office
+* Level 3: $61307 - New Business Partners
+* Level 4: $135367 - Better Product Sources
+* Level 5: $280210 - Community Service Projects
 
 ## Gas Station
 ### Gas Pumps

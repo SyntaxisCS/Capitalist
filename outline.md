@@ -24,3 +24,7 @@
 * %shop - checks user's current upgrades and produces an embed of upgrades that are currently unlockable
 
 * %buy - allows a user to buy upgrades. checks that a user has enough money, has not already bought the upgrade, and has bought all the previous upgrades before adding the upgrade to the users profile
+
+* %profile - display a user's profile with all available stats
+
+* %reset - reset a user's profile and progress
