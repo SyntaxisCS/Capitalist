@@ -12,8 +12,8 @@ A free to use economy game based around owning and managing a business build dir
 
 * Node.js v16
 * Discord.js v13
-* Better-Sqlite3
-* node-html-to-image
+* Better-Sqlite3 v7.4.3
+* node-html-to-image v3.2.0
 
 ### Installing
 
@@ -53,4 +53,4 @@ This project is licensed under the GNU GPL v3 License
 * [Node.js](https://nodejs.org/)
 * [Discord.js](https://discord.js.org/)
 * [Better-Sqlite3](https://www.npmjs.com/package/better-sqlite3)
-* [node-html-to-image](#)
+* [node-html-to-image](https://www.npmjs.com/package/node-html-to-image)
