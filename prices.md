@@ -31,7 +31,7 @@
 * Level 2: $61566 - Deli
 * Level 3: $181458 - Butchery
 
-## Pharmacy
+### Pharmacy
 * Level 1: $21043 - Basic Medical Section
 * Level 2: $36901 - Basic Pharmacy
 * Level 3: $64710 - Vaccine Administration
@@ -148,3 +148,7 @@ who knows :/
 
 ### Employees
 Additional Waiters and Waitresses
+Maitre D
+
+### Decoration
+Tasteful Paintings
