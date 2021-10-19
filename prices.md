@@ -118,9 +118,6 @@
 * Level 7: $239067 - +3 Booths
 * Level 8: $452452 - Dedicated rooms for parties
 
-### Sanitization
-who knows :/
-
 ### Food Grade
 * Level 1: $3312 - D
 * Level 2: $10969 - C
@@ -145,10 +142,3 @@ who knows :/
 * Level 2: $23452 - Additional Chefs
 * Level 3: $49180 - Commercial size sink
 * Level 4: $91672 - Walk-in fridge and freezer
-
-### Employees
-Additional Waiters and Waitresses
-Maitre D
-
-### Decoration
-Tasteful Paintings
