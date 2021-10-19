@@ -1,3 +1,8 @@
+## 0.0.7
+
+Fixes:
+* Additional Error Handling on all commands in the event there isn't a profile
+
 ## 0.0.6
 
 * Changed base income from $0.50 - $3.75 to $2.50 - $10.75

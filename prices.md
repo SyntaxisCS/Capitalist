@@ -1,6 +1,7 @@
 # Upgrade Prices
 
-* Average Daily Profit (Without upgrades) - Min 0.50, Max 3.75 (Changed to )
+* Average Hourly Profit (Without upgrades) - Min 0.50, Max 3.75 (Changed to )
+
 ## Retail
 ### Parking Lots
 * Medium - $15000
@@ -105,3 +106,45 @@
 * Level 2: $64802 - Tesla Super Charger
 * Level 3: $174963 - Multi-Vehicle Charger
 * Level 4: $419908 - Mega Tesla Supercharger station
+
+## Restaurant
+### Tables
+* Level 1: $1656 - Fix uneven tables
+* Level 2: $5484 - +3 tables
+* Level 3: $13623 - Cushioned Chairs
+* Level 4: $30081 - Party Tables
+* Level 5: $62268 - +3 tables
+* Level 6: $123740 - Booths
+* Level 7: $239067 - +3 Booths
+* Level 8: $452452 - Dedicated rooms for parties
+
+### Sanitization
+who knows :/
+
+### Food Grade
+* Level 1: $3312 - D
+* Level 2: $10969 - C
+* Level 3: $27247 - B
+* Level 4: $60163 - B+
+* Level 5: $124537 - A-
+* Level 6: $247481 - A
+* Level 7: $478134 - A+
+
+### Drive Through
+* Level 1: $6291 - Drive Through
+* Level 2: $17589 - +4 Employees
+* Level 3: $36885 - Drive Through Covering
+* Level 4: $68754 - 2nd Drive Through Lane
+* Level 5: $120148 - +4 Employees
+* Level 6: $201561 - 3rd Drive Through Lane
+* Level 7: $328746 - Dedicated Drive Through Manager
+* Level 8: $525242 - Lace employees drinks with cocaine
+
+### Kitchen
+* Level 1: $8388 - Bigger Oven and Grill
+* Level 2: $23452 - Additional Chefs
+* Level 3: $49180 - Commercial size sink
+* Level 4: $91672 - Walk-in fridge and freezer
+
+### Employees
+Additional Waiters and Waitresses

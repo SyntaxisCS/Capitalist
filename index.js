@@ -121,7 +121,7 @@ client.on("messageCreate", (msg) => {
   						collected1 = collected1.first().content;
 						
   						if (collected1.length < 15) {
-  							msg.channel.send(`Trying to create your new ${collected} business named ${collected1}`);
+  							msg.channel.send(`Trying to create your new ${collected} business named ${collected1}...Please wait about 5 seconds`);
   							setTimeout(() => {
   								msg.channel.send("If no error message showed up then it worked!");
   							}, 6000);
@@ -134,15 +134,15 @@ client.on("messageCreate", (msg) => {
   							let upgradeCreate = DB1.prepare(`CREATE TABLE '${msg.guild.id}.${author.id}.upgrades' (upgradeId INT PRIMARY KEY UNIQUE NOT NULL, name STRING NOT NULL);`);
   							upgradeCreate.run();
 
-  							switch(collected) {
+  							switch(collected.toLowerCase()) {
   								case "retail":
-  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
+  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected.toLowerCase()}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   								case "gas station":
-  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
+  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected.toLowerCase()}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   								case "restraurant":
-  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected}.businessProfile' (userId) VALUES ('${author.id}')`).run();
+  									return DB1.prepare(`INSERT OR IGNORE INTO '${collected.toLowerCase()}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   							}
   							DB1.close();
@@ -211,7 +211,7 @@ client.on("messageCreate", (msg) => {
   				userUpgrades = userUpgradesQuery;
   			} catch(err) {
   				if (err) {
-  					msg.channel.send(`There was a database error. If you haven't made a profile you can make one by typing ${prefix}start!`);
+  					console.log(err);
   				}
   			}
 
@@ -220,130 +220,133 @@ client.on("messageCreate", (msg) => {
   					let unlockableUpgradesQuery = DB.prepare(`SELECT * FROM '${userProfile.businessType}.businessProfile' WHERE userId = '${userProfile.userId}'`).get();
   					unlockableUpgrades = unlockableUpgradesQuery
   				} catch(err) {
-  					msg.channels.send("There was a database error.");
+  					msg.channel.send("There was a database error.");
   					console.log(`Error: ${err}`);
   				}
+  				if(!unlockableUpgrades) {
+  					msg.channel.send("You do not have a profile!");
+  				} else {
+  					switch(userProfile.businessType) {
+  						case "retail":
+  							let checkOut = unlockableUpgrades.checkOut + 1;
+  							let aisle = unlockableUpgrades.aisle + 1;
+  							let departments = unlockableUpgrades.departments + 1;
+  							let retailParkingLot = unlockableUpgrades.parkingLot + 1;
+  							let pharmacy = unlockableUpgrades.pharmacy + 1;
+  							let shopping = unlockableUpgrades.shopping + 1;
+  							let logistical = unlockableUpgrades.logistical + 1;
 
-  				switch(userProfile.businessType) {
-  					case "retail":
-  						let checkOut = unlockableUpgrades.checkOut + 1;
-  						let aisle = unlockableUpgrades.aisle + 1;
-  						let departments = unlockableUpgrades.departments + 1;
-  						let retailParkingLot = unlockableUpgrades.parkingLot + 1;
-  						let pharmacy = unlockableUpgrades.pharmacy + 1;
-  						let shopping = unlockableUpgrades.shopping + 1;
-  						let logistical = unlockableUpgrades.logistical + 1;
+  							let retailUpgrades = [];
+  							if (checkOut <= 8) {
+  								retailUpgrades.push(`${checkOut}:CheckOut`);
+  							}
+  							if (aisle <= 5) {
+  								retailUpgrades.push(`${aisle}:Aisle`);
+  							}
+  							if (departments <= 3) {
+  								retailUpgrades.push(`${departments}:Departments`);
+  							}
+  							if (retailParkingLot <= 4) {
+  								retailUpgrades.push(`${retailParkingLot}:Parking Lots`);
+  							}
+  							if (pharmacy <= 4) {
+  								retailUpgrades.push(`${pharmacy}:Pharmacy`);
+  							}
+  							if (shopping <= 7) {
+  								retailUpgrades.push(`${shopping}:Shopping`);
+  							}
+  							if (logistical <= 5) {
+  								retailUpgrades.push(`${logistical}:Logistical`);
+  							}
 
-  						let retailUpgrades = [];
-  						if (checkOut <= 8) {
-  							retailUpgrades.push(`${checkOut}:CheckOut`);
-  						}
-  						if (aisle <= 5) {
-  							retailUpgrades.push(`${aisle}:Aisle`);
-  						}
-  						if (departments <= 3) {
-  							retailUpgrades.push(`${departments}:Departments`);
-  						}
-  						if (retailParkingLot <= 4) {
-  							retailUpgrades.push(`${retailParkingLot}:Parking Lots`);
-  						}
-  						if (pharmacy <= 4) {
-  							retailUpgrades.push(`${pharmacy}:Pharmacy`);
-  						}
-  						if (shopping <= 7) {
-  							retailUpgrades.push(`${shopping}:Shopping`);
-  						}
-  						if (logistical <= 5) {
-  							retailUpgrades.push(`${logistical}:Logistical`);
-  						}
+  							let retailNewUpgrades = [];
+  							if (retailUpgrades.length >= 1) {
+  								retailUpgrades.forEach(upgrade => {
+  									if (upgrade === "Invalid") {return} else {
+  										let newUpgrade = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${upgrade}%'`).get();
+  										retailNewUpgrades.push(newUpgrade);
+  									}
+  								});
+  							}
+  							if (retailNewUpgrades.length >= 1) {
+  								const shopEmbed = new Discord.MessageEmbed()
+    							.setTitle(`${userProfile.username}'s Shop`)
+   		 						.setColor("#47e59c");
+  								retailNewUpgrades.forEach(async array => {
+   									shopEmbed.addFields({ name: `${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+   									// shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+  								});
+  								setTimeout(function() {
+  									return msg.channel.send({embeds:[shopEmbed]});
+								}, 3000);
+  							} else {
+  								return msg.channel.send(`You have unlocked everything!`);
+  							}
+  							break;
+  						case "gas station":
+  							// New Levels
+  							let gasPump = unlockableUpgrades.gasPump + 1;
+  							let gasParkingLot = unlockableUpgrades.parkingLot + 1;
+  							let shelf = unlockableUpgrades.shelf + 1;
+  							let cashier = unlockableUpgrades.cashier + 1;
+  							let slushee = unlockableUpgrades.slushee + 1;
+  							let bathrooms = unlockableUpgrades.bathrooms + 1;
+  							let amenities = unlockableUpgrades.amenities + 1;
+  							let electric = unlockableUpgrades.electric + 1;
 
-  						let retailNewUpgrades = [];
-  						if (retailUpgrades.length >= 1) {
-  							retailUpgrades.forEach(upgrade => {
-  								if (upgrade === "Invalid") {return} else {
-  									let newUpgrade = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${upgrade}%'`).get();
-  									retailNewUpgrades.push(newUpgrade);
-  								}
-  							});
-  						}
-  						if (retailNewUpgrades.length >= 1) {
-  							const shopEmbed = new Discord.MessageEmbed()
-    						.setTitle(`${userProfile.username}'s Shop`)
-   		 					.setColor("#47e59c");
-  							retailNewUpgrades.forEach(async array => {
-   								shopEmbed.addFields({ name: `${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
-   								// shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
-  							});
-  							setTimeout(function() {
-  								return msg.channel.send({embeds:[shopEmbed]});
-							}, 3000);
-  						} else {
-  							return msg.channel.send(`You have unlocked everything!`);
-  						}
-  						break;
-  					case "gas station":
-  						// New Levels
-  						let gasPump = unlockableUpgrades.gasPump + 1;
-  						let gasParkingLot = unlockableUpgrades.parkingLot + 1;
-  						let shelf = unlockableUpgrades.shelf + 1;
-  						let cashier = unlockableUpgrades.cashier + 1;
-  						let slushee = unlockableUpgrades.slushee + 1;
-  						let bathrooms = unlockableUpgrades.bathrooms + 1;
-  						let amenities = unlockableUpgrades.amenities + 1;
-  						let electric = unlockableUpgrades.electric + 1;
+  							let gasUpgrades = [];
+  							if (gasPump <= 8) {
+  								gasUpgrades.push(`${gasPump}:Gas Pump`);
+  							}
+  							if (gasParkingLot <= 4) {
+  								gasUpgrades.push(`${gasParkingLot}:Parking Lot`);
+  							}
+  							if (shelf <= 5) {
+  								gasUpgrades.push(`${shelf}:Shelf`);
+  							}
+  							if (cashier <= 5) {
+  								gasUpgrades.push(`${cashier}:Cashier`);
+  							}
+  							if (slushee <= 1) {
+  								gasUpgrades.push(`${slushee}:Slushee`);
+  							}
+  							if (bathrooms <= 5) {
+  								gasUpgrades.push(`${bathrooms}:Bathrooms`);
+  							}
+  							if (amenities <= 5) {
+  								gasUpgrades.push(`${amenities}:Amenities`);
+  							}
+  							if (electric <= 4) {
+  								gasUpgrades.push(`${electric}:Electric`);
+  							}
 
-  						let gasUpgrades = [];
-  						if (gasPump <= 8) {
-  							gasUpgrades.push(`${gasPump}:Gas Pump`);
-  						}
-  						if (gasParkingLot <= 4) {
-  							gasUpgrades.push(`${gasParkingLot}:Parking Lot`);
-  						}
-  						if (shelf <= 5) {
-  							gasUpgrades.push(`${shelf}:Shelf`);
-  						}
-  						if (cashier <= 5) {
-  							gasUpgrades.push(`${cashier}:Cashier`);
-  						}
-  						if (slushee <= 1) {
-  							gasUpgrades.push(`${slushee}:Slushee`);
-  						}
-  						if (bathrooms <= 5) {
-  							gasUpgrades.push(`${bathrooms}:Bathrooms`);
-  						}
-  						if (amenities <= 5) {
-  							gasUpgrades.push(`${amenities}:Amenities`);
-  						}
-  						if (electric <= 4) {
-  							gasUpgrades.push(`${electric}:Electric`);
-  						}
-
-  						let gasNewUpgrades = [];
-  						if (gasUpgrades.length >= 1) {
-  							gasUpgrades.forEach(upgrade => {
-  								if (upgrade === "Invalid") {return} else {
-  									let newUpgrade = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${upgrade}%'`).get();
-  									gasNewUpgrades.push(newUpgrade);
-  								}
-  							});
-  						}
-  						if (gasNewUpgrades.length >= 1) {
-  							const shopEmbed = new Discord.MessageEmbed()
-    						.setTitle(`${userProfile.username}'s Shop`)
-   		 					.setColor("#47e59c");
-  							gasNewUpgrades.forEach(async array => {
-   								shopEmbed.addFields({ name: `${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
-   								// shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
-  							});
-  							setTimeout(function() {
-  								return msg.channel.send({embeds:[shopEmbed]});
-							}, 3000);
-  						} else {
-  							return msg.channel.send(`You have unlocked everything!`);
-  						}
-  						break;
-  					case "restraurant":
-  						break;
+  							let gasNewUpgrades = [];
+  							if (gasUpgrades.length >= 1) {
+  								gasUpgrades.forEach(upgrade => {
+  									if (upgrade === "Invalid") {return} else {
+  										let newUpgrade = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${upgrade}%'`).get();
+  										gasNewUpgrades.push(newUpgrade);
+  									}
+  								});
+  							}
+  							if (gasNewUpgrades.length >= 1) {
+  								const shopEmbed = new Discord.MessageEmbed()
+    							.setTitle(`${userProfile.username}'s Shop`)
+   		 						.setColor("#47e59c");
+  								gasNewUpgrades.forEach(async array => {
+   									shopEmbed.addFields({ name: `${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+   									// shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+  								});
+  								setTimeout(function() {
+  									return msg.channel.send({embeds:[shopEmbed]});
+								}, 3000);
+  							} else {
+  								return msg.channel.send(`You have unlocked everything!`);
+  							}
+  							break;
+  						case "restraurant":
+  							break;
+  					}
   				}
 			DB.close();
   		}
@@ -939,6 +942,27 @@ client.on("messageCreate", (msg) => {
   				}
   			}
   			DB.close();
+  		}
+  		if (cmd === prefix + "reset") {
+  			try {
+  				msg.channel.send("Attempting to delete your profile...").then(orig => {
+  					const DB = new Database('capitalistDB.sqlite');
+  					let userProfile = DB.prepare(`SELECT businessType FROM 'Profiles' WHERE userId = ${author.id}`).get();
+  					const profileDelete = DB.prepare(`DELETE FROM 'Profiles' WHERE userId = ${author.id}`).run();
+  					const businessDelete = DB.prepare(`DELETE FROM '${userProfile.businessType}.businessProfile' WHERE userId = ${author.id}`).run();
+  					const upgradeDelete = DB.prepare(`DROP TABLE '${msg.guild.id}.${author.id}.upgrades';`).run();
+  				orig.delete();
+  				msg.channel.send(`${author} your profile was succesfully deleted!`);
+  				DB.close();
+  				});
+  			} catch(err) {
+  				console.log(err);
+  				if (err.toString().includes("SqliteError")) {
+  					msg.channel.send("You don't have a profile");
+  				} else {
+  					msg.channel.send("There was a database error.");
+  				}
+  			}
   		}
 	}
 });

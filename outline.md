@@ -1,3 +1,4 @@
+# Application Outline
 ## Databases
 
 * GuildConfig
@@ -28,3 +29,9 @@
 * %profile - display a user's profile with all available stats
 
 * %reset - reset a user's profile and progress
+
+# Ideas
+## Planned Features
+
+* Leaderboard
+* Change shop from embed to html picture
