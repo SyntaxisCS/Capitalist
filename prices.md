@@ -142,3 +142,9 @@
 * Level 2: $23452 - Additional Chefs
 * Level 3: $49180 - Commercial size sink
 * Level 4: $91672 - Walk-in fridge and freezer
+
+### Drinks
+Water
+Bottled and Cans
+Fountain
+Coke free style
