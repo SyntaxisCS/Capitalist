@@ -1,5 +1,8 @@
 ## 0.0.7
 
+Added:
+* Added the restaurant business type and all of it's upgrades
+
 Fixes:
 * Additional Error Handling on all commands in the event there isn't a profile
 

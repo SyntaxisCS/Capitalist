@@ -99,7 +99,7 @@ client.on("messageCreate", (msg) => {
   		if (cmd === prefix + "start") {
   			msg.delete();
   			const filter = m => m.author.id === author.id;
-  			msg.channel.send(`Hello ${author}, thank you for your interest in Capitalist! Before we get started I need you to answer a few questions! What type of business would you like to start? (Retail, Gas Station, Restraurant`);
+  			msg.channel.send(`Hello ${author}, thank you for your interest in Capitalist! Before we get started I need you to answer a few questions! What type of business would you like to start? (Retail, Gas Station, Restaurant`);
 
   			let businessType;
   			let businessName;
@@ -110,12 +110,12 @@ client.on("messageCreate", (msg) => {
   					businessType = "retail";
   				} else if (collected.toLowerCase() === "gas station") {
   					businessType = "gas station";
-  				} else if (collected.toLowerCase() === "restraurant") {
-  					businessType = "restraurant";
+  				} else if (collected.toLowerCase() === "restaurant") {
+  					businessType = "restaurant";
   				} else {
   					msg.channel.send("That is not a valid business type right now. Maybe later ;)");
   				}
-  				if (collected.toLowerCase() === "retail" || collected.toLowerCase() === "gas station" || collected.toLowerCase() === "restraurant") {
+  				if (collected.toLowerCase() === "retail" || collected.toLowerCase() === "gas station" || collected.toLowerCase() === "restaurant") {
   					msg.channel.send(`Alright what would you like to call your brand new ${collected}?`);
   					msg.channel.awaitMessages({filter, max: 1, time:10000, errors:["time"]}).then(collected1 => {
   						collected1 = collected1.first().content;
@@ -141,7 +141,7 @@ client.on("messageCreate", (msg) => {
   								case "gas station":
   									return DB1.prepare(`INSERT OR IGNORE INTO '${collected.toLowerCase()}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
-  								case "restraurant":
+  								case "restaurant":
   									return DB1.prepare(`INSERT OR IGNORE INTO '${collected.toLowerCase()}.businessProfile' (userId) VALUES ('${author.id}')`).run();
   									break;
   							}
@@ -344,7 +344,57 @@ client.on("messageCreate", (msg) => {
   								return msg.channel.send(`You have unlocked everything!`);
   							}
   							break;
-  						case "restraurant":
+  						case "restaurant":
+  							let tables = unlockableUpgrades.tables + 1;
+  							let foodGrade = unlockableUpgrades.foodGrade + 1;
+  							let foodTypes = unlockableUpgrades.foodTypes + 1;
+  							let driveThrough = unlockableUpgrades.driveThrough + 1;
+  							let kitchen = unlockableUpgrades.kitchen + 1;
+  							let drinks = unlockableUpgrades.drinks + 1;
+
+  							let restraurantUpgrades = [];
+  							if (tables <= 8) {
+  								restraurantUpgrades.push(`${tables}:Tables`);
+  							}
+  							if (foodGrade <= 7) {foodGrade
+  								restraurantUpgrades.push(`${foodGrade}:FoodGrade`);
+  							}
+  							if (foodTypes <= 6) {
+  								restraurantUpgrades.push(`${foodTypes}:FoodTypes`);
+  							}
+  							if (driveThrough <= 8) {
+  								restraurantUpgrades.push(`${driveThrough}:DriveThrough`);
+  							}
+  							if (kitchen <= 4) {
+  								restraurantUpgrades.push(`${kitchen}:Kitchen`);
+  							}
+  							if (drinks <= 4) {
+  								restraurantUpgrades.push(`${drinks}:Drinks`);
+  							}
+
+  							let restraurantNewUpgrades = [];
+  							if (restraurantUpgrades.length >= 1) {
+  								restraurantUpgrades.forEach(upgrade => {
+  									if (upgrade === "Invalid") {return} else {
+  										let newUpgrade = DB.prepare(`SELECT * FROM '${userProfile.businessType}.upgrades' WHERE name LIKE '%${upgrade}%'`).get();
+  										restraurantNewUpgrades.push(newUpgrade);
+  									}
+  								});
+  							}
+  							if (restraurantNewUpgrades.length >= 1) {
+  								const shopEmbed = new Discord.MessageEmbed()
+    							.setTitle(`${userProfile.username}'s Shop`)
+   		 						.setColor("#47e59c");
+  								restraurantNewUpgrades.forEach(async array => {
+   									shopEmbed.addFields({ name: `${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+   									// shopEmbed.addFields({ name: `Id ${array.upgradeId}) ${array.name}`, value: `Effect: ${array.effect}, Cost: $${array.cost}` });
+  								});
+  								setTimeout(function() {
+  									return msg.channel.send({embeds:[shopEmbed]});
+								}, 3000);
+  							} else {
+  								return msg.channel.send(`You have unlocked everything!`);
+  							}
   							break;
   					}
   				}
@@ -363,7 +413,7 @@ client.on("messageCreate", (msg) => {
   						maxUpgrade = "37";
   					}
 
-  					let profileCard = `<!DOCTYPE html> <html> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <meta http-equiv="X-UA-Compatible" content="ie=edge" /> <head> <style> body { margin: 0; padding: 0px; max-width: 450px; max-height: 350px; background-color: #1f1f1f; } .card { color: #fff; display: flex; max-width: 450px; max-height: 350px; font-family: "Segoe UI", sans-serif; } .leftWrapper { margin: 0; width: 35%; padding: 35px 20px; text-align: center; background-color: #e53d47; } .leftWrapper img { border-radius: 20px; } .leftWrapper p { font-size: 13px } .rightWrapper { margin: 0; width: 65%; float: left; padding: 30px 25px; background-color: #1f1f1f; } .rightWrapper h3 { text-transform: uppercase; border-bottom: 1px solid #e0e0e0; } .data { display: flex; font-size: 14px; justify-content: space-between; } .packet { width: 45%; float: left; margin-bottom: 5px; } .packet h4 { font-weight: 500px; color: #d9d9d9; } .packet p { color: #8d8d8d; } </style> </head> <body> <div class="card"> <div class="leftWrapper"> <img width="100" src="https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.webp"> <h3>${author.username}</h3> <p>GuildName</p> </div> <div class="rightWrapper"> <h3 style="margin-top:0;padding-top:0">Business Info</h3> <div class="data"> <div class="packet"> <h4>Type</h4> <p>${userProfile.businessType.charAt(0).toUpperCase()+userProfile.businessType.slice(1)}</p> </div> <div class="packet"> <h4>Name</h4> <p>${userProfile.businessName}</p> </div> </div> <h3>Business Stats</h3> <div class="data"> <div class="packet"> <h4>Money</h4> <p>$${userProfile.money}</p> </div> <div class="packet"> <h4>Upgrades</h4> <p>${userProfile.upgrades} of ${maxUpgrade}</p></div></div></div></div><body></html>`;
+  					let profileCard = `<!DOCTYPE html> <html> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <meta http-equiv="X-UA-Compatible" content="ie=edge" /> <head> <style> body { margin: 0; padding: 0px; max-width: 450px; max-height: 350px; background-color: #1f1f1f; } .card { color: #fff; display: flex; max-width: 450px; max-height: 350px; font-family: "Segoe UI", sans-serif; } .leftWrapper { margin: 0; width: 35%; padding: 35px 20px; text-align: center; background-color: #e53d47; } .leftWrapper img { border-radius: 20px; } .leftWrapper p { font-size: 13px } .rightWrapper { margin: 0; width: 65%; float: left; padding: 30px 25px; background-color: #1f1f1f; } .rightWrapper h3 { text-transform: uppercase; border-bottom: 1px solid #e0e0e0; } .data { display: flex; font-size: 14px; justify-content: space-between; } .packet { width: 45%; float: left; margin-bottom: 5px; } .packet h4 { font-weight: 500px; color: #d9d9d9; } .packet p { color: #8d8d8d; } </style> </head> <body> <div class="card"> <div class="leftWrapper"> <img width="100" src="https://cdn.discordapp.com/avatars/${author.id}/${author.avatar}.webp"> <h3>${author.username}</h3> <p>${msg.guild.name}</p> </div> <div class="rightWrapper"> <h3 style="margin-top:0;padding-top:0">Business Info</h3> <div class="data"> <div class="packet"> <h4>Type</h4> <p>${userProfile.businessType.charAt(0).toUpperCase()+userProfile.businessType.slice(1)}</p> </div> <div class="packet"> <h4>Name</h4> <p>${userProfile.businessName}</p> </div> </div> <h3>Business Stats</h3> <div class="data"> <div class="packet"> <h4>Money</h4> <p>$${userProfile.money}</p> </div> <div class="packet"> <h4>Upgrades</h4> <p>${userProfile.upgrades} of ${maxUpgrade}</p></div></div></div></div><body></html>`;
 
   						let profileImage = await htmlToImage({
   							html: profileCard,

@@ -127,6 +127,14 @@
 * Level 6: $247481 - A
 * Level 7: $478134 - A+
 
+### Food Types
+* Level 1: $9270 - Fast Food
+* Level 2: $28644 - Dessert
+* Level 3: $66383 - Pizza
+* Level 4: $136749 - Asian
+* Level 5: $264097 - Mexican
+* Level 6: $489636 - Luxury Gourmet
+
 ### Drive Through
 * Level 1: $6291 - Drive Through
 * Level 2: $17589 - +4 Employees
@@ -144,7 +152,7 @@
 * Level 4: $91672 - Walk-in fridge and freezer
 
 ### Drinks
-Water
-Bottled and Cans
-Fountain
-Coke free style
+* Level 1: $6990 - Water
+* Level 2: $19544 - Bottled and Cans
+* Level 3: $40983 - Fountain
+* Level 4: $76393 - Coke free style
